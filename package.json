@@ -1,0 +1,27 @@
+{
+  "name": "payment-gateway",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Sandbox card-acceptance gateway for a US Node.js business — Adyen acquirer (Visa/Mastercard/Amex/Discover) with an embedded Drop-in checkout, settling into a Wise / Revolut Business account.",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "build": "node scripts/build-client.js",
+    "prestart": "npm run build",
+    "start": "node src/server.js",
+    "dev": "npm run build && node --watch src/server.js",
+    "check": "node -c src/server.js && node -c src/routes/sessions.js && node -c src/routes/webhooks.js && echo syntax-ok"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@adyen/api-library": "^31.0.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "@adyen/adyen-web": "^6.40.2",
+    "esbuild": "^0.28.1"
+  }
+}

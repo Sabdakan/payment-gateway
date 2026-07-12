@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PaymentGateway — Checkout</title>
+  <!-- Adyen Drop-in styles (emitted by esbuild from the adyen-web CSS import) -->
+  <link rel="stylesheet" href="/checkout.bundle.css" />
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; max-width: 480px; margin: 48px auto; padding: 0 20px; color: #16181d; background: #fafafa; }
+    .wrap { background: #fff; border: 1px solid #e6e8eb; border-radius: 14px; padding: 26px; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+    h1 { font-size: 21px; margin: 0 0 2px; }
+    .muted { color: #626873; font-size: 14px; }
+    .small { font-size: 12px; }
+    .nets { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0 18px; }
+    .net { border: 1px solid #e6e8eb; border-radius: 6px; padding: 3px 8px; font-size: 12px; color: #444; }
+    #dropin-container { margin-top: 6px; }
+    #status { min-height: 18px; color: #c0392b; font-size: 14px; margin-top: 12px; }
+    hr { border: 0; border-top: 1px solid #eee; margin: 20px 0 14px; }
+    code { background: #f3f4f6; padding: 1px 5px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Demo product — $19.99</h1>
+    <p class="muted">Embedded checkout, powered by Adyen. No redirect.</p>
+    <div class="nets">
+      <span class="net">Visa</span><span class="net">Mastercard</span>
+      <span class="net">American Express</span><span class="net">Discover</span>
+      <span class="net">Apple&nbsp;Pay</span><span class="net">Google&nbsp;Pay</span>
+    </div>
+
+    <!-- Adyen Drop-in mounts here -->
+    <div id="dropin-container"></div>
+    <p id="status" class="muted"></p>
+
+    <hr />
+    <p class="muted small">
+      Test cards (see README): Visa <code>4111 1111 4555 1142</code> ·
+      Discover <code>6011 1111 1111 1117</code> · exp <code>03/30</code> · CVC <code>737</code>.
+    </p>
+  </div>
+
+  <!-- Bundled Adyen Web + our init code -->
+  <script src="/checkout.bundle.js"></script>
+</body>
+</html>

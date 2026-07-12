@@ -1,0 +1,39 @@
+# Secrets — NEVER commit real or sandbox API keys
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# Build / cache
+dist/
+build/
+.cache/
+coverage/
+.nyc_output/
+
+# Generated client bundle (produced by `npm run build`)
+public/checkout.bundle.js
+public/checkout.bundle.css
+public/*.map
+
+# Runtime
+*.log
+logs/
+pids/
+*.pid
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

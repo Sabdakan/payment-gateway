@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Payment result</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; max-width: 480px; margin: 80px auto; padding: 0 20px; color: #16181d; text-align: center; }
+    .icon { font-size: 46px; }
+    a { color: #3b7ddd; }
+    .muted { color: #626873; font-size: 14px; }
+    code { background: #f3f4f6; padding: 1px 6px; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <div id="icon" class="icon">💳</div>
+  <h1 id="headline">Payment result</h1>
+  <p class="muted">
+    Result code: <code id="status">—</code>. This page is only the browser's view —
+    your server confirms the payment from the Adyen <code>AUTHORISATION</code> webhook.
+    Check the server logs and <a href="/orders">/orders</a>.
+  </p>
+  <p><a href="/checkout.html">← Back to checkout</a></p>
+  <script>
+    const status = new URLSearchParams(location.search).get('status') || 'unknown';
+    document.getElementById('status').textContent = status;
+    const ok = /authorised|received|pending/i.test(status);
+    document.getElementById('icon').textContent = ok ? '✅' : '⚠️';
+    document.getElementById('headline').textContent = ok ? 'Payment submitted' : 'Payment not completed';
+  </script>
+</body>
+</html>
