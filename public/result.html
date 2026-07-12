@@ -8,25 +8,40 @@
     body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; max-width: 480px; margin: 80px auto; padding: 0 20px; color: #16181d; text-align: center; }
     .icon { font-size: 46px; }
     a { color: #3b7ddd; }
+    .btn { display: inline-block; margin-top: 8px; padding: 10px 18px; background: #16181d; color: #fff; border-radius: 8px; text-decoration: none; }
     .muted { color: #626873; font-size: 14px; }
     code { background: #f3f4f6; padding: 1px 6px; border-radius: 5px; }
   </style>
 </head>
 <body>
-  <div id="icon" class="icon">💳</div>
+  <div id="icon" class="icon" role="img" aria-label="Payment status">💳</div>
   <h1 id="headline">Payment result</h1>
   <p class="muted">
     Result code: <code id="status">—</code>. This page is only the browser's view —
-    your server confirms the payment from the Adyen <code>AUTHORISATION</code> webhook.
-    Check the server logs and <a href="/orders">/orders</a>.
+    your server confirms the payment from the Adyen <code>AUTHORISATION</code> webhook
+    (see the server logs). <a href="/orders">/orders</a> is a dev-only debug view.
   </p>
-  <p><a href="/checkout.html">← Back to checkout</a></p>
+  <p id="cta"><a href="/checkout.html">← Back to checkout</a></p>
   <script>
-    const status = new URLSearchParams(location.search).get('status') || 'unknown';
-    document.getElementById('status').textContent = status;
-    const ok = /authorised|received|pending/i.test(status);
-    document.getElementById('icon').textContent = ok ? '✅' : '⚠️';
-    document.getElementById('headline').textContent = ok ? 'Payment submitted' : 'Payment not completed';
+    const raw = new URLSearchParams(location.search).get('status') || 'unknown';
+    const s = raw.toLowerCase();
+    const set = (id, txt) => { document.getElementById(id).textContent = txt; };
+    set('status', raw);
+
+    let icon, headline, aria, failed = false;
+    if (s === 'authorised') { icon = '✅'; headline = 'Payment submitted'; aria = 'Success'; }
+    else if (s === 'pending' || s === 'received') { icon = '⏳'; headline = "Payment processing — we'll confirm shortly"; aria = 'Processing'; }
+    else { icon = '⚠️'; headline = 'Payment not completed'; aria = 'Not completed'; failed = true; }
+
+    const iconEl = document.getElementById('icon');
+    iconEl.textContent = icon;
+    iconEl.setAttribute('aria-label', aria);
+    set('headline', headline);
+    document.title = headline + ' — PaymentGateway';
+
+    if (failed) {
+      document.getElementById('cta').innerHTML = '<a class="btn" href="/checkout.html">Try again</a>';
+    }
   </script>
 </body>
 </html>

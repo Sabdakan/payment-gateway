@@ -13,12 +13,14 @@
     "check": "node -c src/server.js && node -c src/routes/sessions.js && node -c src/routes/webhooks.js && echo syntax-ok"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "dependencies": {
     "@adyen/api-library": "^31.0.0",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "express-rate-limit": "^8.5.2",
+    "helmet": "^8.3.0"
   },
   "devDependencies": {
     "@adyen/adyen-web": "^6.40.2",

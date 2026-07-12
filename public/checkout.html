@@ -3,42 +3,74 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PaymentGateway — Checkout</title>
+  <title>Checkout — PaymentGateway</title>
+  <!-- Speed: warm up the Adyen asset origin before the bundle needs it -->
+  <link rel="preconnect" href="https://checkoutshopper-test.adyen.com" crossorigin />
+  <link rel="dns-prefetch" href="https://checkoutshopper-test.adyen.com" />
   <!-- Adyen Drop-in styles (emitted by esbuild from the adyen-web CSS import) -->
   <link rel="stylesheet" href="/checkout.bundle.css" />
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; max-width: 480px; margin: 48px auto; padding: 0 20px; color: #16181d; background: #fafafa; }
+    body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; max-width: 480px; margin: 40px auto; padding: 0 20px; color: #16181d; background: #fafafa; }
     .wrap { background: #fff; border: 1px solid #e6e8eb; border-radius: 14px; padding: 26px; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
-    h1 { font-size: 21px; margin: 0 0 2px; }
+    h1 { font-size: 20px; margin: 0 0 14px; }
     .muted { color: #626873; font-size: 14px; }
     .small { font-size: 12px; }
-    .nets { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0 18px; }
-    .net { border: 1px solid #e6e8eb; border-radius: 6px; padding: 3px 8px; font-size: 12px; color: #444; }
-    #dropin-container { margin-top: 6px; }
-    #status { min-height: 18px; color: #c0392b; font-size: 14px; margin-top: 12px; }
-    hr { border: 0; border-top: 1px solid #eee; margin: 20px 0 14px; }
+    /* order summary */
+    .summary { border: 1px solid #eef0f2; border-radius: 10px; padding: 12px 14px; margin-bottom: 18px; }
+    .summary .row { display: flex; justify-content: space-between; font-size: 14px; padding: 3px 0; }
+    .summary .total { font-weight: 600; border-top: 1px solid #eef0f2; margin-top: 6px; padding-top: 8px; }
+    /* drop-in + loading skeleton (reserve height to kill layout shift) */
+    #dropin-container { min-height: 320px; }
+    .skeleton { padding-top: 4px; }
+    .sk-row { height: 46px; border-radius: 8px; margin: 10px 0; background: linear-gradient(90deg,#eef0f2 25%,#f7f8f9 50%,#eef0f2 75%); background-size: 200% 100%; animation: sk 1.2s linear infinite; }
+    .sk-btn { height: 48px; }
+    @keyframes sk { to { background-position: -200% 0; } }
+    @media (prefers-reduced-motion: reduce) { .sk-row { animation: none; } }
+    /* status line: neutral by default, red only on real errors */
+    #status { min-height: 18px; color: #626873; font-size: 14px; margin-top: 12px; }
+    #status.error { color: #b3261e; }
+    #status .retry { margin-left: 8px; background: none; border: 0; color: #3b7ddd; text-decoration: underline; cursor: pointer; font-size: 14px; padding: 0; }
+    .trust { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 16px; }
+    .net { border: 1px solid #e6e8eb; border-radius: 6px; padding: 3px 8px; font-size: 12px; color: #666; }
+    details.testcards { margin-top: 14px; color: #626873; font-size: 12px; }
+    details.testcards summary { cursor: pointer; }
     code { background: #f3f4f6; padding: 1px 5px; border-radius: 4px; }
+    @media (max-width: 520px) { body { margin: 12px auto; } .wrap { padding: 18px 16px; border-radius: 10px; } }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Demo product — $19.99</h1>
-    <p class="muted">Embedded checkout, powered by Adyen. No redirect.</p>
-    <div class="nets">
-      <span class="net">Visa</span><span class="net">Mastercard</span>
-      <span class="net">American Express</span><span class="net">Discover</span>
-      <span class="net">Apple&nbsp;Pay</span><span class="net">Google&nbsp;Pay</span>
+    <h1>Checkout</h1>
+
+    <section class="summary" aria-label="Order summary">
+      <div class="row"><span>Demo product</span><span class="js-amount">—</span></div>
+      <div class="row total"><span>Total</span><span class="js-amount">—</span></div>
+    </section>
+
+    <!-- Adyen Drop-in mounts here. Apple Pay / Google Pay render on top, then card.
+         The skeleton is shown until Drop-in is interactive (onReady). -->
+    <div id="dropin-container" aria-busy="true">
+      <div class="skeleton" aria-hidden="true">
+        <div class="sk-row sk-btn"></div>
+        <div class="sk-row"></div>
+        <div class="sk-row"></div>
+        <div class="sk-row sk-btn"></div>
+      </div>
     </div>
 
-    <!-- Adyen Drop-in mounts here -->
-    <div id="dropin-container"></div>
-    <p id="status" class="muted"></p>
+    <p id="status" role="status" aria-live="polite"></p>
 
-    <hr />
-    <p class="muted small">
-      Test cards (see README): Visa <code>4111 1111 4555 1142</code> ·
-      Discover <code>6011 1111 1111 1117</code> · exp <code>03/30</code> · CVC <code>737</code>.
-    </p>
+    <div class="trust" aria-hidden="true">
+      <span class="net">Visa</span><span class="net">Mastercard</span>
+      <span class="net">Amex</span><span class="net">Discover</span>
+      <span class="net">🔒 Secured by Adyen</span>
+    </div>
+
+    <details class="testcards">
+      <summary>Sandbox test cards</summary>
+      Visa <code>4111 1111 4555 1142</code> · Discover <code>6011 1111 1111 1117</code> ·
+      exp <code>03/30</code> · CVC <code>737</code>
+    </details>
   </div>
 
   <!-- Bundled Adyen Web + our init code -->

@@ -124,7 +124,24 @@ PaymentGateway/
 
 - **PCI SAQ-A**: card data is entered inside Adyen's Drop-in (secured iframes) — this
   server never sees a card number.
-- **Webhook HMAC verified** with `ADYEN_HMAC_KEY`; only authenticated notifications act.
-- Card acceptance runs the acquirer's 3-D Secure automatically via the sessions flow.
-- Secrets live in `.env` (git-ignored). Use **test** credentials until go-live; the
-  go-live checklist is in `docs/RESEARCH.md`.
+- **Webhook HMAC verified** with `ADYEN_HMAC_KEY`, and it **fails closed**: unsigned
+  webhooks are rejected outside local test, an invalid signature returns `401` (so Adyen
+  retries instead of silently dropping a real payment), and the server **refuses to boot**
+  in production/live without a real HMAC key.
+- **Idempotent** webhook handling keyed on `pspReference:eventCode` (Adyen redelivers).
+- **Rate limiting** on `POST /api/sessions` (20 / 15 min) blunts card-testing abuse; a
+  same-origin guard rejects cross-site session creation; the order store is memory-capped.
+- **`helmet`** sets security headers (frame-deny, no-sniff, HSTS, hides `X-Powered-By`).
+  CSP is left off by default — enable it with Adyen's allowed sources before go-live.
+- Error responses are **generic in production** (Adyen internals only shown in dev).
+- `GET /orders` is a **dev-only** debug view (disabled when `NODE_ENV=production`).
+- Secrets live in `.env` (git-ignored). Use **test** credentials until go-live.
+
+### Go-live checklist (delta from sandbox)
+1. Set `NODE_ENV=production`, `ADYEN_ENVIRONMENT=live`, real `ADYEN_HMAC_KEY`, and the
+   live endpoint prefix; add your domain to the API credential's **Allowed origins**.
+2. Enable a proper **CSP** for `*.adyen.com` / `checkoutshopper-live*.adyen.com`.
+3. Enable **Apple Pay / Google Pay / Klarna** on the Adyen account (they then appear in
+   Drop-in automatically — the frontend already requests wallet-first placement).
+4. Swap the in-memory order store for a database; wire the fulfillment `TODO` in
+   `routes/webhooks.js`. Full provider notes: `docs/RESEARCH.md`.

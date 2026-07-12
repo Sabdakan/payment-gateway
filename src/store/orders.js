@@ -2,20 +2,25 @@
 
 // Toy in-memory persistence so the sandbox runs with zero external deps.
 // Replace with a real database (Postgres, etc.) before production.
-const orders = new Map(); // key (session/paymentIntent id) -> order record
-const processedEvents = new Set(); // Stripe event ids already handled (idempotency)
+const MAX_ORDERS = 10000;
+const orders = new Map(); // merchantReference -> order record
+const processedEvents = new Set(); // Adyen "pspReference:eventCode" pairs already handled (webhook idempotency)
 
-function alreadyProcessed(eventId) {
-  return processedEvents.has(eventId);
+function alreadyProcessed(eventKey) {
+  return processedEvents.has(eventKey);
 }
 
-function markProcessed(eventId) {
-  processedEvents.add(eventId);
+function markProcessed(eventKey) {
+  processedEvents.add(eventKey);
 }
 
 function recordOrder(key, data) {
   const existing = orders.get(key) || {};
   orders.set(key, { ...existing, ...data, updatedAt: new Date().toISOString() });
+  // Bound memory (Map preserves insertion order): evict the oldest beyond the cap.
+  if (orders.size > MAX_ORDERS) {
+    orders.delete(orders.keys().next().value);
+  }
   return orders.get(key);
 }
 
